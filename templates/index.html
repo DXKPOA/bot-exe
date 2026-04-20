@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Магазин видеоигр</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <div class="page-shell"></div>
+  <header class="header">
+    <div class="container header__inner">
+      <a href="#top" class="brand">
+        <span class="brand__mark">▶</span>
+        <span class="brand__text">Магазин <em>видеоигр</em></span>
+      </a>
+      <nav class="nav">
+        <a href="#catalog">Каталог</a>
+        <a href="#profiles">Профили</a>
+        <a href="#reviews">Отзывы</a>
+        <a href="#ai">AI-помощник</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="container hero__grid">
+        <div class="hero__content card card--hero">
+          <div class="eyebrow">Учебный проект</div>
+          <h1>Магазин видеоигр</h1>
+          <p class="hero__lead">Каталог, профили, отзывы и AI-помощник в одном интерфейсе.</p>
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="#catalog">Открыть каталог</a>
+            <a class="btn btn--secondary" href="#ai">Проверить AI</a>
+          </div>
+        </div>
+
+        <div class="hero__stats">
+          <div class="stat card">
+            <div class="stat__value">{{ dashboard.stats.games }}</div>
+            <div class="stat__label">игр в каталоге</div>
+          </div>
+          <div class="stat card">
+            <div class="stat__value">{{ dashboard.stats.users }}</div>
+            <div class="stat__label">пользователей</div>
+          </div>
+          <div class="stat card">
+            <div class="stat__value">{{ dashboard.stats.successful_orders }}</div>
+            <div class="stat__label">выполненных заказов</div>
+          </div>
+          <div class="stat card stat--accent">
+            <div class="stat__value">{{ dashboard.stats.paid_volume }}</div>
+            <div class="stat__label">объём подтверждённых продаж</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--muted">
+      <div class="container">
+        <div class="section__head">
+          <div>
+            <div class="eyebrow">Выбор редакции</div>
+            <h2>Рекомендуемые игры</h2>
+          </div>
+          <p class="section__note">Подборка по рейтингу и отзывам.</p>
+        </div>
+        <div class="featured-grid">
+          {% for game in dashboard.featured[:4] %}
+          <article class="feature-card card" style="--cover: {{ game.cover }}">
+            <div class="feature-card__cover">
+              <span class="badge">{{ game.category_name }}</span>
+            </div>
+            <div class="feature-card__body">
+              <div class="meta-row"><span>{{ game.developer_name }}</span><span>{{ game.release_year }}</span></div>
+              <h3>{{ game.title }}</h3>
+              <p>{{ game.short_description }}</p>
+              <div class="chips">
+                <span class="chip">⭐ {{ game.review_avg }}</span>
+                <span class="chip">{{ game.platforms }}</span>
+              </div>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section id="catalog" class="section">
+      <div class="container">
+        <div class="section__head">
+          <div>
+            <div class="eyebrow">Каталог</div>
+            <h2>Каталог с фильтрами и сортировкой</h2>
+          </div>
+          <p class="section__note">Поиск по названию, категориям и цене.</p>
+        </div>
+
+        <div class="toolbar card">
+          <div class="field field--wide">
+            <label for="searchInput">Поиск</label>
+            <input id="searchInput" type="text" placeholder="Например: RPG на PC, спортивные игры, Cyberpunk">
+          </div>
+          <div class="field">
+            <label for="categorySelect">Категория</label>
+            <select id="categorySelect">
+              <option value="">Все категории</option>
+              {% for category in categories %}
+              <option value="{{ category.id }}">{{ category.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="sortSelect">Сортировка</label>
+            <select id="sortSelect">
+              <option value="popular">Сначала популярные</option>
+              <option value="rating">По рейтингу</option>
+              <option value="price_asc">Сначала дешевле</option>
+              <option value="price_desc">Сначала дороже</option>
+              <option value="new">Сначала новинки</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="catalogMeta" class="catalog-meta"></div>
+        <div id="catalogGrid" class="catalog-grid"></div>
+      </div>
+    </section>
+
+    <section id="profiles" class="section section--muted">
+      <div class="container">
+        <div class="section__head">
+          <div>
+            <div class="eyebrow">Личные кабинеты</div>
+            <h2>Профили пользователей</h2>
+          </div>
+          <p class="section__note">История заказов, активность и интересы.</p>
+        </div>
+        <div class="profiles-grid">
+          {% for profile in dashboard.profiles %}
+          <article class="profile-card card">
+            <div class="profile-card__top">
+              <div>
+                <h3>{{ profile.user.first_name }} {{ profile.user.last_name }}</h3>
+                <p>@{{ profile.user.username }} · {{ profile.user.email }}</p>
+              </div>
+              <span class="tag">{{ profile.user.country }}</span>
+            </div>
+            <div class="profile-kpis">
+              <div><strong>{{ profile.orders|length }}</strong><span>заказа</span></div>
+              <div><strong>{{ profile.reviews|length }}</strong><span>отзыва</span></div>
+              <div><strong>{{ profile.cart_count }}</strong><span>в корзине</span></div>
+            </div>
+            <div class="profile-card__block">
+              <div class="mini-title">Любимые категории</div>
+              <div class="chips">
+                {% for item in profile.favorite_categories %}<span class="chip">{{ item }}</span>{% endfor %}
+              </div>
+            </div>
+            <div class="profile-card__block">
+              <div class="mini-title">Последние заказы</div>
+              <div class="mini-list">
+                {% for order in profile.orders %}
+                <div class="mini-list__item"><strong>{{ order.game_title }}</strong><span>{{ order.status }} · {{ order.amount }} ₽</span></div>
+                {% endfor %}
+              </div>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section id="reviews" class="section">
+      <div class="container">
+        <div class="section__head">
+          <div>
+            <div class="eyebrow">Пользовательский контент</div>
+            <h2>Отзывы пользователей</h2>
+          </div>
+          <p class="section__note">Текстовые отзывы для анализа и сводок.</p>
+        </div>
+        <div class="reviews-grid">
+          {% for review in dashboard.latest_reviews %}
+          <article class="review-card card">
+            <div class="review-card__meta">
+              <div>
+                <h3>{{ review.game_title }}</h3>
+                <p>{{ review.username }} · {{ review.created_at }}</p>
+              </div>
+              <span class="tag">{{ review.rating }}/10</span>
+            </div>
+            <p class="review-card__text">{{ review.text }}</p>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section id="ai" class="section section--muted">
+      <div class="container">
+        <div class="section__head">
+          <div>
+            <div class="eyebrow">AI-помощник</div>
+            <h2>AI-помощник</h2>
+          </div>
+          <p class="section__note">Сценарии: поиск, рекомендации, сводка и консультант.</p>
+        </div>
+        <div class="ai-grid">
+          <div class="card ai-panel">
+            <div class="field">
+              <label for="modelInput">Модель</label>
+              <input id="modelInput" type="text" value="{{ default_model }}">
+            </div>
+            <div class="field">
+              <label for="scenarioSelect">Сценарий</label>
+              <select id="scenarioSelect">
+                <option value="chat">AI-консультант</option>
+                <option value="search">Интеллектуальный поиск</option>
+                <option value="recommend">Персональные рекомендации</option>
+                <option value="summary">Сводка отзывов</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="promptInput">Задача</label>
+              <textarea id="promptInput" rows="8">Подбери сюжетную RPG на PC до 3000 рублей и объясни выбор.</textarea>
+            </div>
+            <div class="scenario-pills">
+              <button class="scenario-pill" data-scenario="search" data-prompt="Найди кооперативную игру на PC до 2500 рублей с высоким рейтингом.">Поиск</button>
+              <button class="scenario-pill" data-scenario="recommend" data-prompt="Порекомендуй 3 игры пользователю, который любит RPG и игры с высоким рейтингом.">Рекомендации</button>
+              <button class="scenario-pill" data-scenario="summary" data-prompt="Сделай краткую сводку отзывов: что чаще всего нравится и что критикуют пользователи.">Сводка</button>
+              <button class="scenario-pill" data-scenario="chat" data-prompt="Ответь как консультант магазина: что выбрать на PS5 до 2500 рублей?">Консультант</button>
+            </div>
+            <div class="panel-actions">
+              <button id="runAiBtn" class="btn btn--primary">Отправить запрос</button>
+              <button id="healthBtn" class="btn btn--secondary">Проверить backend</button>
+            </div>
+            <div class="service-row">
+              <span class="service-pill">API: {{ api_base_url }}</span>
+              <span class="service-pill">Ключ в backend: {{ 'да' if api_configured else 'нет' }}</span>
+            </div>
+          </div>
+          <div class="card output-panel">
+            <div class="output-panel__head">
+              <h3>Ответ AI</h3>
+              <span id="outputStatus" class="tag">ожидание</span>
+            </div>
+            <div id="aiOutput" class="output">Нажмите «Отправить запрос», чтобы получить ответ.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="gameModal" class="modal hidden" aria-hidden="true">
+    <div class="modal__backdrop" data-close-modal></div>
+    <div class="modal__dialog card">
+      <button class="modal__close" data-close-modal>×</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script>
+    window.__INITIAL_DATA__ = {{ initial_data|safe }};
+  </script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
